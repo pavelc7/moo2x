@@ -11,9 +11,9 @@ namespace	nPrivate
 	int		gshift;
 	int		bshift;
 
-	int sx=800;
+	int sx=640;//800;
 		//1024;//800;//=640;
-	int sy=600;
+	int sy=480;//600;
 	//768;//600;//=480;
 	int get_sx(void){return sx;};
 	int get_sy(void){return sy;};
@@ -817,8 +817,8 @@ int __stdcall	WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR lpCmdLin
 		flags = WS_POPUP | WS_VISIBLE | WS_SYSMENU | WS_EX_TOPMOST;
 	} else
 	{
-		width = 800;//645;
-		height= 600;//500;
+		width = nPrivate::sx+20;//800;//645;
+		height= nPrivate::sy+40;//600;//500;
 																			//added| WS_OVERLAPPEDWINDOW | WS_SIZEBOX
 		flags = WS_POPUP | WS_VISIBLE | WS_SYSMENU | WS_BORDER | WS_CAPTION | WS_OVERLAPPEDWINDOW | WS_SIZEBOX;
 	}

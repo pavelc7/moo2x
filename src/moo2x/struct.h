@@ -277,6 +277,7 @@ struct MOX__planet_t //17bytes
 };
 #define STAR_RECORD_SIZE 113
 //see http://code.google.com/p/moomapgen/source/browse/trunk/struct.h
+//      https://github.com/tf8/moomapgen/blob/master/struct.h
 struct MOX__star_t //113 bytes
 {	
 	//BYTE arr[STAR_RECORD_SIZE];
@@ -951,3 +952,12 @@ struct PicFrameHeader
 	ui8 i8arr[16];
 	};
 };
+
+
+
+typedef struct {
+	DPID idFrom;//0
+	DPID idTo;//1
+	ui32 size;//2
+	LPDWORD data;//3
+} netdata_header_t;

@@ -57,6 +57,8 @@ void PatchData(struct Limits * patchlimits);
 
 #define cached_mouse_x				(*(ui16 *)(0x00578ABC))
 #define cached_mouse_y				(*(ui16 *)(0x00578AB8))
+
+#define block_counter_55B650 (*(ui32*)(0x0055B650))
 //////////////////////////////////////////////////////////////////////////
 HWND	CreateDirectDraw(DWORD videoMode);
 void	FlipSurface();
@@ -141,10 +143,12 @@ void __cdecl ERIC_Fast_Fade_In_(); //0x004BA740
 void __cdecl ERIC_Fast_Fade_Out_();//0x004BA690
 
 void *__cdecl do_malloc_hooked(size_t size); // 0x0052E9C0
+void *__cdecl calloc_hooked(size_t num,size_t size);//0x00542A70
 void *__cdecl malloc_hooked(size_t);//0x005421A0
 void __cdecl free_hooked(void *);//0x00542270
 size_t __cdecl msize_hooked(void *ptr);//00546F50
 void* __cdecl realloc_hooked(void *lpMem, size_t size);//00546D80
+
 
 i16 __cdecl SHIPSTAK_Ship_Has_Special_(i16 nShip, ui16 bit); //0x00460600
 i32	MOX2_Main(void*param);//0x00483470
@@ -160,9 +164,23 @@ ui8* MISC_Font_Colors2_(int a1, __int16 type, __int16 colors, __int16 palette); 
 i16 __cdecl get_type_color_sub_4F1E30();
 //alloc
 void __cdecl ALLOC_Allocate_Data_Space_();//0x00500B20
-i32* allocate_Allocate_Dos_Space(size_t size);//0x0052E8E0
-i32* allocate_Allocate_Space(size_t size);//0x0052E880
-i32* allocate_Allocate_Space_No_Header(size_t size); //0x0052EA60
+i32* __cdecl allocate_Allocate_Dos_Space(size_t size);//0x0052E8E0
+i32* __cdecl allocate_Allocate_Space(size_t size);//0x0052E880
+i32* __cdecl allocate_Allocate_Space_No_Header(size_t size); //0x0052EA60
+i32* __cdecl allocate_Allocate_Next_Block(i32* buf, size_t size_); //0x0052E950
+i32* __cdecl allocate_Allocate_First_Block(i32* buf, size_t size); //0052E930
+i32* __cdecl allocate_Allocate_First_Block_No_Header(i32* buf, size_t size); //0052EAA0
+i32* __cdecl allocate_Allocate_Next_Block_No_Header(i32* buf, size_t size); //0052EAC0
+i32* __cdecl allocate_Mark_Block(i32* buf); //0052EB10
+i32* __cdecl allocate_Release_Block(i32* buf); //0052EB20
+int __cdecl allocate_Get_Remaining_Block_Space(i32* buf); //0052EBB0
+int __cdecl allocate_Pop_Block(); //0052EB70
+i32* __cdecl Allocate_Push_Block(i32 *buf); //0052EB30
+
+
+void __cdecl no_memory_sub_52E9F0(size_t size);//0x0052E9F0
+void __cdecl malloc_error(size_t size,size_t need,size_t all_); //0052EA20
+
 
 i16 HAROLD_Map_Scale_To_Zoom_Level_();//004F1090
 
@@ -174,10 +192,15 @@ i8 __cdecl video_Toggle_Pages();//0x00527EA0
 i8 __cdecl MOX2__TOGGLE_PAGES_();//0x00483C80
 
 void RUSS_PFMT_(int a1, int a2, const char *format, ...);//004D7850
+int sprintf_(char *buf, const char *format, ... );//00540550
+
 //void __cdecl fonts_Print(int a1, int a2, char* pstr); //00525910
 
 i16 __cdecl set_map_maxxy_sub_4B6C40();//0x004B6C40
 i16 __cdecl get_galaxy_size_sub_4F1050();//0x004F1050
+
+i16 __cdecl MAINSCR_Get_Star_Draw_Coords_(__int16 star_id, i16* x, i16* y); //004C7550
+i32 __cdecl MAINSCR_Star_On_Screen_(i16 star_id);//004CD120
 
 
 i16 zoom_scale_sub_4F0880(i16 galaxy_size);
@@ -235,13 +258,19 @@ i16 __cdecl HAROLD_XY_To_Star_Id_(__int16 x, __int16 y); //0x004F1DC0
 void helper_clean_ship_array();
 //net
 i8 __cdecl net_check_GUID_sub_538680(const char *nettypename);
-i32 __stdcall guid_sub_5385C0(int a1, const void *a2, int a3, int a4, int a5);
+//i32 __stdcall guid_sub_5385C0(LPGUID lpguidSP, LPSTR lpSPName, DWORD dwMajorVersion, DWORD dwMinorVersion, LPVOID lpContext);
+//i32 __stdcall guid_sub_5385C0(int a1, const void *a2, int a3, int a4, int a5);
+//i32 __stdcall guid_sub_5385C0(int lpguidSP, LPSTR lpSPName, ui32 dwMajorVersion, ui32 dwMinorVersion, ui32 lpContext);
+i32 __stdcall guid_sub_5385C0(LPGUID lpguidSP, LPCSTR lpSPName, DWORD dwMajorVersion, DWORD dwMinorVersion, LPVOID lpContext);
+
+int __cdecl net_switch_sub_5081D0();
 
 void __cdecl DP_sub_539CE0(signed int a1);
 #ifdef DPLAY_USE_IN_DLL
 int __cdecl net_sub_538760();
 
-i32 __cdecl sub_539AD0(DWORD* a1);
+//i32 __cdecl sub_539AD0(DWORD* a1);
+i32 __cdecl sub_539AD0(netdata_header_t* head);
 
 void __cdecl kill_net_sub_534B40();
 int __cdecl sub_5387A0(DPID            dpId,
@@ -261,7 +290,8 @@ i32 __cdecl net_create_sub_5386D0(i32 type);
 
 HRESULT __cdecl net_sub_535400();//allow adding new players
 HRESULT __cdecl net_sub_535420();//disallow
-i32 __cdecl netcode_Net_Create_Game(int a1, int a2, int a3, int a4,  char *a5, const char *a6, const char *a7,  char*a8); //00535290
+//i32 __cdecl netcode_Net_Create_Game(int a1, int a2, int a3, int a4,  char *a5, const char *a6, const char *a7,  char*a8); //00535290
+i32 __cdecl netcode_Net_Create_Game(int guid1, int guid2, int guid3, int guid4,  char *sessionname, int maxplayers, const char *passw, char *a8); //00535290
 i32 __cdecl netcode_Net_Join_Game(const char *a1, const char *a2,  char *a3);
 const char* __cdecl sub_5350C0(ui32 a1);
 int __cdecl DP_enum_sessions_sub_534FA0(int a1, int a2, int a3, int a4);
@@ -278,6 +308,7 @@ i16 __cdecl DP_send_sub_539950(int data, unsigned __int16 size, int a3, unsigned
 	int __cdecl net_decode_sub_539BE0(DWORD *data);
 	void __cdecl net_decode_sub_539BC0(DWORD *data);
 	signed int __cdecl netcode_Net_Init(int type, int guid1, int guid2, int guid3, int guid4, int pFunc, char *data);
+	i32 __cdecl Initialize_NetCode(int type, int guid1, int guid2, int guid3, int guid4, int pFunc, char* data); //004C2A40
 	//
 	int __cdecl sub_539C90(DWORD *data);
 i8 __cdecl sub_539C00(DWORD* data);
@@ -293,3 +324,5 @@ void UpdateThread( void * param);
 
 int __cdecl callback_sub_534A70();
 
+i32 __cdecl HAROLD_Get_Up_Scaled_Value_(i16 d); //004F0A50
+i32 __cdecl HAROLD_Get_Scaled_Value_(i16 d); //004F0A30

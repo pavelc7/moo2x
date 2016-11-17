@@ -1,5 +1,7 @@
 #pragma once
 
+const int MULTI = 128;//256;
+
 #include	"Ship.h"
 
 #define MOX__stardate		(*(ui32 *)(0x0059BA64))
@@ -27,8 +29,8 @@
 #define MOX__fleet_icon_button_count	(*(i16*)(0x00596D18))
 
 #define MOX__leaders (*(MOX__leader_t**)(0x0059BF40))
-#define MOX__nebula (*(MOX__nebula_t**)(0x00597770))
-#define MOX__nebula_screen_seg (*(i32**)(0x005A2BEC))
+#define pMOX__nebula (*(MOX__nebula_t**)(0x00597770))
+#define pMOX__nebula_screen_seg (*(i32**)(0x005A2BEC))
 #define REPORT__displayed_msgs (*(i8*)(0x005A5276))
 #define DIPLODEF__COUNCIL_FLAG (*(i16*)(0x0059600E))
 #define DIPLODEF__next_council_meeting_turn (*(i16*)(0x0059600C))
@@ -49,7 +51,7 @@
 #define MOX__NUM_STARS (*(i16*)(0x0059740A))
 #define MOX__star (*(MOX__star_t**)(0x005A18F4)) 
 
-#define MOX__screen_seg (*(i32*)(0x005973E4))
+#define pMOX__screen_seg (*(i32**)(0x005973E4))
 
 #define WM_USER_UPDATE 0x401
 #define WM_USER_UPDATEMOUSE 0x402

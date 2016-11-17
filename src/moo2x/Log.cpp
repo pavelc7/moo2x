@@ -67,6 +67,13 @@ void	Log::Write(const char * szLog)
 
 void	Log::Printf(const char * szFormat, ...)
 {
+	va_list vaList;
+	va_start(vaList, szFormat);
+	Log::vPrintf(szFormat, vaList);	
+	va_end(vaList);
+}
+void	Log::vPrintf(const char * szFormat, va_list args)
+{
 	if (m_fp == NULL)
 		return;
 
@@ -76,10 +83,21 @@ void	Log::Printf(const char * szFormat, ...)
 	strftime(buffer, MSL, "[%d/%m/%y %H:%M:%S] ", loctime);
 	fprintf(m_fp, buffer);
 
+	//va_list vaList;
+	//va_start(vaList, szFormat);
+	vfprintf(m_fp, szFormat, args);
+	fflush(m_fp);
+	//va_end(vaList);
+}
+int Log::level_off=LOGMEM;
+void	Log::Printf_level(int logging_level,const char * szFormat, ...)
+{	
+	int r=logging_level^level_off;
+	if(r==0)
+		return;
 	va_list vaList;
 	va_start(vaList, szFormat);
-	vfprintf(m_fp, szFormat, vaList);
-	fflush(m_fp);
+	Log::vPrintf(szFormat,vaList);
 	va_end(vaList);
 }
 

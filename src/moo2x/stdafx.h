@@ -5,7 +5,7 @@
 
 #define DPLAY_USE_IN_DLL
 #ifdef DPLAY_USE_IN_DLL
-#undef IDIRECTPLAY2_OR_GREATER //MOO2 use dplay ver 1 !!!
+//#undef IDIRECTPLAY2_OR_GREATER //MOO2 use dplay ver 1 !!!
 //#define IDIRECTPLAY2_OR_GREATER 
 #include <dplay.h> 	// directplay main
 //#include <dplobby.h>   // the directplay lobby

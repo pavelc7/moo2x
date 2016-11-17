@@ -1,7 +1,7 @@
 #include	"stdafx.h"
 #pragma pack(push, 1)
 
-
+DPID group=0;
 struct dp_create_player
 {
 	DWORD/*DPID*/ dpID;      //0
@@ -12,7 +12,16 @@ struct dp_create_player
 #define nGUID_dword_560798 (*(i32*)(0x00560798))
 #define lpGUID ((LPGUID*)(0x0058D770))
   //see http://www.microsoft.com/en-us/download/details.aspx?id=13287 //for aug 2007 directx sdk for directxplay
-i32 __stdcall guid_sub_5385C0(int a1, const void *a2, int a3, int a4, int a5)
+/*BOOL FAR PASCAL EnumDPCallback(
+        LPGUID lpguidSP,
+        LPSTR/LPWSTR lpSPName,
+        DWORD dwMajorVersion,
+        DWORD dwMinorVersion,
+        LPVOID lpContext
+);*/
+//i32 __stdcall guid_sub_5385C0(int a1, const void *a2, int a3, int a4, int a5);
+//i32 __stdcall guid_sub_5385C0(int lpguidSP, LPCSTR lpSPName, DWORD dwMajorVersion, DWORD dwMinorVersion, ui32 lpContext)
+i32 __stdcall guid_sub_5385C0(LPGUID lpguidSP, LPCSTR lpSPName, DWORD dwMajorVersion, DWORD dwMinorVersion, LPVOID lpContext)
 {
   DWORD v5; 
   signed int result;
@@ -25,11 +34,11 @@ i32 __stdcall guid_sub_5385C0(int a1, const void *a2, int a3, int a4, int a5)
   {
     lpGUID[nGUID_dword_560798] = (LPGUID)malloc(124);//124
     v5 = (DWORD)lpGUID[nGUID_dword_560798];
-	memcpy((void *)lpGUID[nGUID_dword_560798], (void*)a1, 16);
+	memcpy((void *)lpGUID[nGUID_dword_560798], (void*)lpguidSP, 16);
     
-    memcpy((void *)(v5 + 16), a2, 100u);
-    *(DWORD *)(v5 + 116) = a3;
-    *(DWORD *)(v5 + 120) = a4;
+    memcpy((void *)(v5 + 16), (void*)lpSPName, 100u);
+    *(DWORD *)(v5 + 116) = dwMajorVersion;
+    *(DWORD *)(v5 + 120) = dwMinorVersion;
     _strlwr((char *)(v5 + 16));
     result = 1;
     ++nGUID_dword_560798;
@@ -77,6 +86,7 @@ void __cdecl DP_sub_539CE0(signed int type_err)
 		str="Unknown Err";
 	}
 	strcpy(&Text[16], str);	
+	pLog.Printf("(DP_sub_539CE0) %s\n",Text);
 	exit_Exit_With_Message(Text);
 }
 #define  dword_589990 (*(i32*)(0x00589990))
@@ -91,13 +101,13 @@ void __cdecl DP_sub_539CE0(signed int type_err)
 int __cdecl net_sub_538760()
 {
 
-  DirectPlayEnumerate((LPDPENUMDPCALLBACKA)&guid_sub_5385C0,0);
+  DirectPlayEnumerate((LPDPENUMDPCALLBACKA)&guid_sub_5385C0,g_hWnd);
 
   return 0;
 }
 #define dword_591F00 ((i32*)(0x00591F00))
 #define lpDP (*(LPDIRECTPLAY*)(0x0055BF28))
-i32 __cdecl sub_539AD0(DWORD* a1)
+i32 __cdecl sub_539AD0(netdata_header_t* head)
 {
 
 	DWORD v5=0; // [sp+10h] [bp-18h]@1
@@ -106,7 +116,7 @@ i32 __cdecl sub_539AD0(DWORD* a1)
 	
 	DWORD dwDataSize = dword_591F00[0];
 	
-	LPVOID lpData = (LPVOID)a1[3];
+	LPVOID lpData = head->data;//(LPVOID)a1[3];
 		
 	//STDMETHOD(Receive)              (THIS_ LPDPID,LPDPID,DWORD,LPVOID,LPDWORD) PURE;
 	HRESULT res = lpDP->Receive(&idFrom,&idTo,DPRECEIVE_ALL|DPRECEIVE_PEEK,lpData,&dwDataSize);		
@@ -120,9 +130,9 @@ i32 __cdecl sub_539AD0(DWORD* a1)
 	{
 		
 		OutputDebugStringA("Receiving Message....\n");
-		pLog.Printf("Net Receive (i=0x%x) From 0x%X to 0x%X [0]=0x%x, size=%d\n",dpid_dword_5899F8,idFrom,idTo,*((DWORD*)a1[3]),dwDataSize);
-		pLog.Dump(lpData,dwDataSize);
-		//DP2 STDMETHOD(Receive)              (THIS_ LPDPID,LPDPID,DWORD,LPVOID,LPDWORD) PURE;				
+		//pLog.Printf("Net Receive (i=0x%x) From 0x%X to 0x%X [0]=0x%x, size=%d\n",dpid_dword_5899F8,idFrom,idTo,head->data[0],dwDataSize);
+		//pLog.Dump(lpData,dwDataSize);
+		////DP2 STDMETHOD(Receive)              (THIS_ LPDPID,LPDPID,DWORD,LPVOID,LPDWORD) PURE;				
 		dwDataSize = dword_591F00[0];
 		res =  lpDP->Receive(&idFrom,&idTo,DPRECEIVE_ALL,lpData,&dwDataSize);
 		
@@ -134,11 +144,11 @@ i32 __cdecl sub_539AD0(DWORD* a1)
 		}
 		else
 		{
-		  a1[0] = idFrom;      
-		  a1[1] = idTo;
-		  a1[2] = dwDataSize;
-		  pLog.Printf("Net Receive (i=0x%x) From 0x%X to 0x%X [0]=0x%x, size=%d\n",dpid_dword_5899F8,idFrom,idTo,*((DWORD*)a1[3]),dwDataSize);
-		  pLog.Dump(lpData,dwDataSize);
+		  head->idFrom = LOBYTE(idFrom);      
+		  head->idTo = LOBYTE(idTo);
+		  head->size = dwDataSize;
+		  pLog.Printf("Net Receive (i=0x%x) From 0x%X to 0x%X [0]=0x%x, size=%d\n",dpid_dword_5899F8,idFrom,idTo,head->data[0],dwDataSize);
+		  pLog.Dump(head->data,head->size);
 		  return 3;
 		}
 	}
@@ -199,7 +209,7 @@ int __cdecl sub_5387A0(DPID            dpID,
   assert(sizeof(dp_create_player)==80);
   //v4 = dword_589988;
   dword_5899A8[dword_589988] = (DWORD)pdpcp;
-  pdpcp->dpID=dpID;
+  pdpcp->dpID=LOBYTE(dpID);
   strcpy(pdpcp->name1, lpName2);
   strcpy(pdpcp->name2, lpName1);
   pdpcp->clock=dword_5897F0();
@@ -208,7 +218,8 @@ int __cdecl sub_5387A0(DPID            dpID,
   //strcpy((char *)(dword_5899A8[dword_589988] + 56), (char*)lpName1);
   //result = dword_5897F0();
   //*(DWORD *)(dword_5899A8[dword_589988++] + 76) = result;
-  dword_589988++;
+  pLog.Printf("i=%x dpID=0x%x name1=%s name2=%s\n",dword_589988,dpID,lpName1,lpName2);
+  dword_589988++;  
   return pdpcp->clock;
 }
 /*
@@ -266,7 +277,7 @@ signed int __cdecl DP_enum_players_sub_534DB0(int a1)
   //STDMETHOD(EnumPlayers)          (THIS_ LPGUID,LPDPENUMPLAYERSCALLBACK2,LPVOID,DWORD) PURE;
   //LPDPENUMSESSIONSCALLBACK2
   //STDMETHOD(EnumPlayers)          (THIS_ DWORD_PTR, LPDPENUMPLAYERSCALLBACK,LPVOID,DWORD) PURE;
-  lpDP->EnumPlayers(a1,(LPDPENUMPLAYERSCALLBACK) &sub_538780,g_hWnd,128);
+  lpDP->EnumPlayers(a1,(LPDPENUMPLAYERSCALLBACK) &sub_538780,g_hWnd,DPENUMPLAYERS_SESSION); //0x80 128 - DPENUMPLAYERS_SESSION
 #endif
   return 1;
 }
@@ -403,6 +414,7 @@ void __cdecl DP_Create_Player_sub_538940(LPDPID a1,  LPSTR a2,  LPSTR a3)
 {
   HRESULT res = DPERR_NOINTERFACE;
   #ifdef DPLAY_USE_IN_DLL
+  //STDMETHOD(CreatePlayer)         (THIS_ LPDPID,LPSTR,LPSTR,LPHANDLE) PURE;
 	  res = lpDP->CreatePlayer((LPDPID)a1,
 		 (LPSTR)a2,
          (LPSTR)a3,
@@ -425,23 +437,25 @@ void __cdecl DP_Create_Player_sub_538940(LPDPID a1,  LPSTR a2,  LPSTR a3)
     sub_5387A0(*a1, a2, a3);
   }
 }
-
-i32 __cdecl netcode_Net_Create_Game(int a1, int a2, int a3, int a4,  char *a5, const char *a6, const char *a7, char *a8) //00535290
+#if 1
+i32 __cdecl netcode_Net_Create_Game(int guid1, int guid2, int guid3, int guid4,  char *sessionname, int maxplayers, const char *passw, char *a8) //00535290
 { 
   DPSESSIONDESC dpSD; 
 
   memset(&dpSD, 0, sizeof(DPSESSIONDESC));
   assert(sizeof(DPSESSIONDESC)==124);
   dpSD.dwSize = sizeof(DPSESSIONDESC);
-  dpSD.guidSession.Data1 = a1;
-  *(DWORD *)&dpSD.guidSession.Data2 = a2;  
-  *(DWORD *)&dpSD.guidSession.Data4[0] = a3;
+  dpSD.guidSession.Data1 = guid1;
+  *(DWORD *)&dpSD.guidSession.Data2 = guid2;  
+  *(DWORD *)&dpSD.guidSession.Data4[0] = guid3;
   dpSD.dwFlags = DPOPEN_CREATESESSION;//0x02
-  *(DWORD *)&dpSD.guidSession.Data4[4] = a4;
-  dpSD.dwMaxPlayers = (DWORD)a6;
-  strcpy(dpSD.szSessionName, a5);
-  if ( a7 && a7[0] )
-    strcpy(dpSD.szPassword, a7);
+  *(DWORD *)&dpSD.guidSession.Data4[4] = guid4;
+  dpSD.dwMaxPlayers = maxplayers;
+  strcpy(dpSD.szSessionName, sessionname);
+  if ( passw && passw[0] )
+    strcpy(dpSD.szPassword, passw);
+
+  pLog.Printf("GUID= %X-%X-%X-%X max=%d session=%s pass=%s\n",guid1,guid2,guid3,guid4,maxplayers,sessionname,passw);
   /*(*((HRESULT (__stdcall **)(IDirectPlay *, LPDPSESSIONDESC))lpDP->lpVtbl + 20))((IDirectPlay *)lpDP, &v12)*/
   HRESULT res  = DPERR_NOINTERFACE;
 #ifdef DPLAY_USE_IN_DLL
@@ -468,17 +482,22 @@ i32 __cdecl netcode_Net_Create_Game(int a1, int a2, int a3, int a4,  char *a5, c
 	char str1[MSL];
 	char str2[MSL];
 	time_t t=time(0);
-	wsprintf(str1,"%s%X",a8,t);
-	wsprintf(byte_551100,"%X",t);
+	//wsprintf(str1,"%s%X",a8,t);
+	wsprintf(str1,"%s",a8,t);
+	//wsprintf(byte_551100,"%c",(i8)t);
+	//byte_551100[0] = LOBYTE(t);
+	//byte_551100[0]
     DP_Create_Player_sub_538940(&id, str1, byte_551100);
-	pLog.Printf("Net Create as 0x%x %s %s in %s\n",id,str1,byte_551100,dpSD.szSessionName);
-    dpid_dword_5899F8 = id;
-    sub_539800(450u*1024, (int)a5, (int (__cdecl *)(DWORD, DWORD, DWORD, DWORD))dword_589990);    
+	pLog.Printf("Net Create as 0x%x %s %x in %s\n",id,str1,byte_551100[0],dpSD.szSessionName);
+    dpid_dword_5899F8 = LOBYTE(id);
+	group = id & 0xFFFFFF00;
+    sub_539800(450u*MULTI, (int)sessionname, (int (__cdecl *)(DWORD, DWORD, DWORD, DWORD))dword_589990);    
     dword_55BF24 = 1;
 	return 1;
   }
   return 0;
 }
+#endif
 HRESULT __cdecl net_sub_535400()
 {
 	HRESULT result = DPERR_NOINTERFACE; // eax@2
@@ -499,22 +518,22 @@ HRESULT __cdecl net_sub_535420()
 
 i32 __cdecl netcode_Net_Join_Game(const char *a1, const char *a2,  char *a3)
 {
-  unsigned int v3; // ebx@1
+  signed int v3; // ebx@1
   
   signed int result; // eax@7
-  int *v6; // ebx@10
-  int v7; // ecx@10
-  int v8; // esi@10
-  int v9; // eax@10
-  int v10; // ST04_4@14
+  //int *v6; // ebx@10
+  //int v7; // ecx@10
+  //int v8; // esi@10
+  //int v9; // eax@10
+  //int v10; // ST04_4@14
   DPID v11; // [sp+10h] [bp-80h]@14
   DPSESSIONDESC dpSD; // [sp+14h] [bp-7Ch]@10
-  int v13; // [sp+18h] [bp-78h]@10
-  int v14; // [sp+1Ch] [bp-74h]@10
-  int v15; // [sp+20h] [bp-70h]@10
-  int v16; // [sp+24h] [bp-6Ch]@10
-  int v17; // [sp+28h] [bp-68h]@10
-  signed int v18; // [sp+34h] [bp-5Ch]@10
+  //int v13; // [sp+18h] [bp-78h]@10
+  //int v14; // [sp+1Ch] [bp-74h]@10
+  //int v15; // [sp+20h] [bp-70h]@10
+  //int v16; // [sp+24h] [bp-6Ch]@10
+  //int v17; // [sp+28h] [bp-68h]@10
+  //signed int v18; // [sp+34h] [bp-5Ch]@10
   //int v19; // [sp+6Ch] [bp-24h]@11
 
   v3 = -1;
@@ -544,7 +563,7 @@ i32 __cdecl netcode_Net_Join_Game(const char *a1, const char *a2,  char *a3)
       //v8 = *v6 + 4;      
 	  memcpy(&dpSD,v6,24);//sizeof(DPSESSIONDESC));
 	  dpSD.dwSize = sizeof(DPSESSIONDESC);
-	  dpSD.dwFlags = DPOPEN_OPENSESSION; //0x01
+	  dpSD.dwFlags = DPOPEN_OPENSESSION; //0x01//DPOPEN_JOIN
 	  //dpSD.
       //v13 = *(_DWORD *)v8;
       //v14 = *(_DWORD *)(v8 + 4);
@@ -569,13 +588,17 @@ i32 __cdecl netcode_Net_Join_Game(const char *a1, const char *a2,  char *a3)
 		  DPID id=0;
 		  char str1[MSL];
 		  time_t t=time(0);
-		  wsprintf(str1,"%s%X",a3,t);		  
-			wsprintf(byte_551100,"%X",t);
+		  //wsprintf(str1,"%s%X",a3,t);		  
+		  wsprintf(str1,"%s",a3,t);
+		  //wsprintf(byte_551100,"%x",(i8)t);
+		  //byte_551100[0] = LOBYTE(t);
+			//wsprintf(byte_551100,"%X",t);
     
         DP_Create_Player_sub_538940(&id, str1, byte_551100);
-		pLog.Printf("Net Join as 0x%x %s %s in %s\n",id,str1,byte_551100,dpSD.szSessionName);
-        dpid_dword_5899F8 = id;
-        sub_539800(450u*1024, (int)dpSD.szSessionName, (i32_pfunc_4xUI32_t)dword_589990);
+		pLog.Printf("Net Join as 0x%x %s %x in %s\n",id,str1,byte_551100[0],dpSD.szSessionName);
+        dpid_dword_5899F8 = LOBYTE(id);
+		group = id & 0xFFFFFF00;
+        sub_539800(450u*MULTI, (int)dpSD.szSessionName, (i32_pfunc_4xUI32_t)dword_589990);
         result = 1;
         dword_55BF24 = 1;
 		return 1;
@@ -612,8 +635,9 @@ i16 __cdecl DP_send_sub_539950(int data, unsigned __int16 size, int a3, unsigned
   DPID idTo;  
   DWORD dwFlags; // [sp-Ch] [bp-18h]@12  
   DWORD dwDataSize; // [sp-4h] [bp-10h]@12
-
-  if ( a4 >= 100u )
+  pLog.Printf("idTo=0x%x, code=0x%x a5=0x%x a6=0x%x\n",a3,a4,a5,a6);
+  pLog.Dump((LPVOID)data,size);
+  if ( a4 >= 100u )//0x64
   {
     if ( size > 350u || a5 == 2 )
     {
@@ -647,7 +671,9 @@ i16 __cdecl DP_send_sub_539950(int data, unsigned __int16 size, int a3, unsigned
         dwDataSize = size + 4;
         //lpData = (LPVOID)dword_591F28;
         dwFlags = 0;
-        idTo = a3;
+        //idTo = a3;
+		//idTo = (dpid_dword_5899F8 & 0xFFFFFF00) | LOBYTE(a3);
+		idTo =  LOBYTE(a3)|group;
       }
 	  dwFlags = DPSEND_GUARANTEED;
 	  //STDMETHOD(Send)                 (THIS_ DPID, DPID, DWORD, LPVOID, DWORD) PURE;
@@ -659,7 +685,7 @@ i16 __cdecl DP_send_sub_539950(int data, unsigned __int16 size, int a3, unsigned
         DWORD dwDataSize*/
 	  pLog.Printf("Net Send From 0x%X to 0x%X [0]=0x%x, size=%d\n",dpid_dword_5899F8,idTo,dword_591F28[0],dwDataSize);
 	  pLog.Dump(dword_591F28,dwDataSize);
-	  HRESULT res=lpDP->Send(dpid_dword_5899F8,             
+	  HRESULT res=lpDP->Send(dpid_dword_5899F8|group,             
              idTo,
              dwFlags,
              (LPVOID)dword_591F28,
@@ -672,7 +698,7 @@ i16 __cdecl DP_send_sub_539950(int data, unsigned __int16 size, int a3, unsigned
   }
   else
   {
-    result = -205;
+    result = 0xFF33u;//-205;
   }
   return result;
 }
@@ -789,6 +815,7 @@ signed int __cdecl netcode_Net_Init(int type, int guid1, int guid2, int guid3, i
     v7 = 1;
     sub_5337F0(3, (int)&guid1, v8);
   }
+
   return v7;
 }
 
@@ -797,7 +824,10 @@ signed int __cdecl net_decode_sub_539B80(DWORD *data)
   signed int result; // eax@1
 
   result = 0;
-  if(!data)return -1;
+  if(!data){
+	  exit_Exit_With_Message("data==0");
+	  return -1;
+  }
   switch (  data[0])
   {
   case DPSYS_CREATEPLAYERORGROUP://join //0x03 DPSYS_ADDPLAYER
@@ -818,28 +848,31 @@ signed int __cdecl net_decode_sub_539B80(DWORD *data)
 
 int __cdecl callback_sub_534A70()
 {
-  return 1000 * clock() / 1000;
+  int t=(1000 * clock() / 1000);
+  pLog.Printf("(clock) %d\n",t);
+  return t;
 }
-#define dword_591ED8 ((DWORD*)(0x00591ED8))
+//#define dword_591ED8 ((DWORD*)(0x00591ED8))
+#define dword_591ED8 (*(netdata_header_t*)(0x00591ED8))
 i8 __cdecl net_decode_sub_539A60()
 {
   errno=0;  
   int res=0;
   for(int i=0;i<100;i++)
   {
-    res = sub_539AD0(dword_591ED8);
+    res = sub_539AD0(&dword_591ED8);
     if ( res != 3 )
       break;
   
-    DWORD *data = (DWORD*)dword_591ED8[3];
+	DWORD *data = (DWORD*)dword_591ED8.data;//(DWORD*)dword_591ED8[3];
 	res = net_decode_sub_539B80(data);
     if ( !res )
     {      
 	  int k=data[0];
       if ( k == 81 || k == 97 || k == 113 )//0x51  0x61 0x71
-        res = sub_539C00(dword_591ED8);
+        res = sub_539C00((DWORD*)&dword_591ED8);
       if ( k == 65 ) //0x41
-        res = sub_539C90(dword_591ED8);
+        res = sub_539C90((DWORD*)&dword_591ED8);
     }
   }  
   return res;
@@ -847,20 +880,32 @@ i8 __cdecl net_decode_sub_539A60()
 #define pFunc_dword_591F1C (*(i32_pfunc_3xUI32_t*)(0x00591F1C))
 i8 __cdecl sub_539C00(DWORD* data)
 {
-  
+  //data[0] - idFrom
+	// [1] - idTo
+	// [2] - size
+	// [3] - data
+		pLog.Printf("decoding...\n");
+	//pLog.Dump(dword_591ED8.data,dword_591ED8.size);
+	pLog.Dump((LPVOID)data[3],data[2]);
   if ( data[0] == dpid_dword_5899F8 )
   {
     return 1;
   }
   else
   {
-	if(pFunc_dword_591F1C==NULL)
-		  return 0;
+	if(pFunc_dword_591F1C==NULL){ // sub_53A050
+		exit_Exit_With_Message("pFunc_dword_591F1C is NULL");
+		return 0;
+	}
+	DWORD*v2 = (DWORD *)data[3];
+	//pLog.Printf("[sub_539C00]\n");
+	//pLog.Dump((v2+1),data[2]-4);
     switch (*(DWORD*)data[3])
-	{
+	{//net_sub_53A050
 	case 81:    
       {       
-        pFunc_dword_591F1C(1970, data[2]-4, data[3]+4);
+        pFunc_dword_591F1C(1970, data[2]-4, data[3]+4); 
+		//(DWORD)(v2+1));
 		break;
       }
 	case 113:
@@ -881,9 +926,9 @@ i8 __cdecl sub_539C00(DWORD* data)
 int __cdecl sub_539C90(DWORD *data)
 {
   int result; // eax@1
-  unsigned int v2; // esi@2
+  //unsigned int v2; // esi@2
   int v3; // ebp@3
-  DWORD *v4; // edi@4
+  //DWORD *v4; // edi@4
 
   result = dpid_dword_5899F8;
   if ( data[0] == dpid_dword_5899F8 )
@@ -902,5 +947,64 @@ int __cdecl sub_539C90(DWORD *data)
         }        
   }
   
+  return result;
+}
+
+
+
+i32 __cdecl Initialize_NetCode(int type, int guid1, int guid2, int guid3, int guid4, int pFunc, char* data) //004C2A40
+{ //net_conn_type_byte_595204  3 - ten
+  i32 res; // esi@1
+
+  RUSS_Mox_Update_();
+  res = netcode_Net_Init(type, guid1, guid2, guid3, guid4, pFunc, data);
+  RUSS_Mox_Update_();
+  return res;
+}
+
+#define dword_59C42C (*(ui32**)(0x0059C42C))
+#define net_conn_type_byte_595204 (*(ui8*)(0x00595204))
+int __cdecl net_switch_sub_5081D0()
+{
+  int result; // eax@4
+
+  switch ( MOX__settings.multi_player_game_type )
+  {
+    case 2://modem
+      MOX__game_type = 3;
+      *(i16*)((i8*)dword_59C42C + 247) = 0;
+      *(i16*)((i8*)dword_59C42C + 249) = 1;
+      *(i16*)((i8*)dword_59C42C + 251) = 0;
+      result = *dword_59C42C;
+      *(i16*)((i8*)dword_59C42C + 253) = 0;
+      net_conn_type_byte_595204 = 1;
+      break;
+    case 3://nullmodem
+      MOX__game_type = 3;
+      *(i16*)((i8*)dword_59C42C + 247) = 0;
+      *(i16*)((i8*)dword_59C42C + 249) = 0;
+      *(i16*)((i8*)dword_59C42C + 251) = 1;
+      result = *dword_59C42C;
+      *(i16*)((i8*)dword_59C42C + 253) = 0;
+      net_conn_type_byte_595204 = 2;
+      break;
+    case 4://hotseat
+      MOX__game_type = 1;
+      *(i16*)((i8*)dword_59C42C + 247) = 0;
+      *(i16*)((i8*)dword_59C42C + 249) = 0;
+      *(i16*)((i8*)dword_59C42C + 251) = 0;
+      result = *dword_59C42C;
+      *(i16*)((i8*)dword_59C42C + 253) = 1;
+      break;
+    default: //1 //network
+      MOX__game_type = 2;
+      *(i16*)((i8*)dword_59C42C + 247) = 1;
+      *(i16*)((i8*)dword_59C42C + 249) = 0;
+      *(i16*)((i8*)dword_59C42C + 251) = 0;
+      result = *dword_59C42C;
+      *(i16*)((i8*)dword_59C42C + 253) = 0;
+      net_conn_type_byte_595204 = 0;
+      break;
+  }
   return result;
 }

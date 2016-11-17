@@ -11,8 +11,16 @@ namespace	nPrivate
 	int		gshift;
 	int		bshift;
 
-	int sx;//=640;
-	int sy;//=480;
+	int sx=800;
+		//1024;//800;//=640;
+	int sy=600;
+	//768;//600;//=480;
+	int get_sx(void){return sx;};
+	int get_sy(void){return sy;};
+	int get_xx(){return sx-134;};
+	int get_yy(){return sy-80;};
+	const int offset_x = 21;
+	const int offset_y = 21;
 	// Shift from mask calculator
 	int GetMaskInfo (DWORD Bitmask, int* lpShift)
 	{
@@ -127,8 +135,8 @@ namespace	nPrivate
 // Hooked CreateDirectDraw function
 HWND	CreateDirectDraw(DWORD videoMode)
 {
-	nPrivate::sx=800;//640;
-	nPrivate::sy=600;//480;
+	//nPrivate::sx=800;//640;
+	//nPrivate::sy=600;//480;
 
 	MEMORYSTATUS	memStatus;
 	GlobalMemoryStatus(&memStatus);
@@ -172,8 +180,8 @@ HWND	CreateDirectDraw(DWORD videoMode)
 		g_screen_res_y = 480;
 		break;
 	case 5:
-		g_screen_res_x = nPrivate::sx;
-		g_screen_res_y = nPrivate::sy;
+		g_screen_res_x = /*800;*/nPrivate::sx;
+		g_screen_res_y = /*600;*/nPrivate::sy;
 		break;
 	}
 	nPrivate::sx=g_screen_res_x;
@@ -748,12 +756,12 @@ void myWorkerThread( void * param)
 		
 		Sleep(1000);
 		if(global_QuitFlag==1)break;
-		printf("date=%d\t",(ui32)MOX__stardate);
-		printf("plrs=%d\t",(ui8)MOX__NUM_PLAYERS);
-		printf("scrflag=%d\t",(ui32)MOX__FULL_DRAW_SCREEN_FLAG );
-		printf("nebs=%d\t",(ui8)MOX__NUM_NEBULAS);
-		printf("pl=0x%X\t",(ui32)MOX__player );		
-		printf("scr=0x%X \r",(ui32)MOX__current_screen );
+		printf("date=%d\t\n",(ui32)MOX__stardate);
+		printf("plrs=%d\t\n",(ui8)MOX__NUM_PLAYERS);
+		printf("scrflag=%d\t\n",(ui32)MOX__FULL_DRAW_SCREEN_FLAG );
+		printf("nebs=%d\t\n",(ui8)MOX__NUM_NEBULAS);
+		printf("pl=0x%X\t\n",(ui32)MOX__player );		
+		printf("scr=0x%X \r\n",(ui32)MOX__current_screen );
 
 	}
 	return;
@@ -809,8 +817,8 @@ int __stdcall	WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR lpCmdLin
 		flags = WS_POPUP | WS_VISIBLE | WS_SYSMENU | WS_EX_TOPMOST;
 	} else
 	{
-		width = 645;
-		height= 500;
+		width = 800;//645;
+		height= 600;//500;
 																			//added| WS_OVERLAPPEDWINDOW | WS_SIZEBOX
 		flags = WS_POPUP | WS_VISIBLE | WS_SYSMENU | WS_BORDER | WS_CAPTION | WS_OVERLAPPEDWINDOW | WS_SIZEBOX;
 	}
@@ -824,7 +832,7 @@ int __stdcall	WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR lpCmdLin
 
 	SetCursor(FALSE);
 
-	CreateDirectDraw(4);
+	CreateDirectDraw(5);//was 4
 
 	ThreadHandle = _beginthread(WorkerThread, 0xFFFF, 0);
 	
@@ -1311,11 +1319,11 @@ BYTE __cdecl FILEDEF_Load_Game_(i16 numfile)
   //fread(&MOX__fleet_icon_button_count, sizeof(WORD), 1, f);
   memcopy_from_savegame(MOX__fleet_icon_button_count,fleet_icon_button_count);//memcpy(&MOX__fleet_icon_button_count,&savegame.fleet_icon_button_count,sizeof(savegame.fleet_icon_button_count));
   //fread(MOX__nebula, 20, 1, f);
-  memcpy(MOX__nebula,&savegame.nebulas,MAX_NEBULAS*sizeof(MOX__nebula_t));
+  memcpy(pMOX__nebula,&savegame.nebulas,MAX_NEBULAS*sizeof(MOX__nebula_t));
   //memcopy_from_savegame(MOX__nebula,nebula);//memcpy(&MOX__nebula,&savegame.nebula,sizeof(savegame.nebula));
   //fread(&MOX__NUM_NEBULAS, 1, 1, f);
   memcopy_from_savegame(MOX__NUM_NEBULAS,num_nebulas);//memcpy(&MOX__NUM_NEBULAS,&savegame.num_nebulas,sizeof(savegame.num_nebulas));
-  if ( !*MOX__nebula_screen_seg )
+  if ( !*pMOX__nebula_screen_seg )
     MOX__NUM_NEBULAS = 0;
   //fread(&MOX__bill_savegame, 12, 1, f);
   memcopy_from_savegame(MOX__bill_savegame,bill_savegame);//memcpy(&MOX__bill_savegame,&savegame.bill_savegame,sizeof(savegame.bill_savegame));
@@ -1384,7 +1392,7 @@ BYTE __cdecl FILEDEF_Load_Game_(i16 numfile)
     }
   
   HAROLD_Restore_Mouse_List_();
-  RUSS_Release_All_Blocks_(MOX__screen_seg);
+  RUSS_Release_All_Blocks_((i32)pMOX__screen_seg);
   return 1;
 }
 //#define random_random_seed (*(ui32*)(0x0057B6F0))
@@ -1472,7 +1480,7 @@ void __cdecl FILEDEF_Save_Game_(i16 numfile)
 	memcopy_to_savegame(MOX__MAP_MAX_X,max_x);
 	memcopy_to_savegame(MOX__MAP_MAX_Y,max_y);
 	memcopy_to_savegame(MOX__fleet_icon_button_count,fleet_icon_button_count);
-	memcpy(&savegame.nebulas,MOX__nebula,MAX_NEBULAS*sizeof(MOX__nebula_t));
+	memcpy(&savegame.nebulas,pMOX__nebula,MAX_NEBULAS*sizeof(MOX__nebula_t));
 	memcopy_to_savegame(MOX__NUM_NEBULAS,num_nebulas);
 	memcopy_to_savegame(MOX__bill_savegame,bill_savegame);
 	memcopy_to_savegame(REPORT__n_reports,n_reports);
@@ -1566,25 +1574,43 @@ void* __cdecl realloc_hooked(void *lpMem, size_t size)//0x00546D80
 {
 	return realloc(lpMem,size);
 }
+std::map<void*,size_t> malloced_map;
 void *__cdecl malloc_hooked(size_t size)//0x005421A0
 {
 	void* ptr=0;
 	
 	ptr = malloc(size);
 	//pLog.Printf("malloc ptr=0x%p\t0x%X\t(%d) bytes\n",ptr,size,size);
+	malloced_map.insert(std::map<void*,size_t>::value_type(ptr,size));
+	return ptr;
+}
+void *__cdecl calloc_hooked(size_t num,size_t size)//0x00542A70
+{
+	void* ptr=0;
 	
+	ptr = calloc(num, size);
+	//pLog.Printf("malloc ptr=0x%p\t0x%X\t(%d) bytes\n",ptr,size,size);
+	malloced_map.insert(std::map<void*,size_t>::value_type(ptr,num*size));
 	return ptr;
 }
 void __cdecl free_hooked(void *ptr)//0x00542270
 {
 	//pLog.Printf("free   ptr=0x%p\n",ptr);
-	free(ptr);	
+	std::map<void*,size_t>::iterator it;
+	it=malloced_map.find(ptr);
+	if (it != malloced_map.end()){
+		malloced_map.erase (it);
+		free(ptr);	
+	}else{
+		pLog.Printf("wrong ptr 0x%X\n",ptr);
+	}
 }
 void *__cdecl do_malloc_hooked(size_t size) // 0x0052E9C0
 {
   void *ptr; // esi@1
-  ptr = //malloc(size);//
-	  malloc_in_orion95(size);
+  ptr = malloc(size);//
+  malloced_map.insert(std::map<void*,size_t>::value_type(ptr,size));
+	  //malloc_in_orion95(size);
   //pLog.Printf("malloc ptr=0x%p\t0x%X\t(%d) bytes\n",ptr,size,size);
   if ( !ptr )
     exit_Exit_With_Message("Null Pointer");      
@@ -1662,7 +1688,7 @@ i16 __cdecl fonts_Set_PSTR_Style(i16 font_style)//0x00526D00
 void __cdecl ALLOC_Allocate_Data_Space_()//0x00500B20
 {
   size_t size=0;
-  const int MULTI=256;
+  
   MOX__global_screen_seg = allocate_Allocate_Space(1790000 * MULTI);
   MOX__techname_seg = allocate_Allocate_Space(30000 * MULTI);
   ALLOC__special_names_seg = allocate_Allocate_Space(1000 * MULTI);
@@ -1679,14 +1705,14 @@ void __cdecl ALLOC_Allocate_Data_Space_()//0x00500B20
   MOX__colony = (MOX__colony_t*)allocate_Allocate_Space(size);//90250);
   struct_Clear_Structure_(MOX__colony, size);//90250u);
 
-  MOX__nebula_screen_seg = allocate_Allocate_Space(256000 * MULTI);
+  pMOX__nebula_screen_seg = allocate_Allocate_Space(256000 * MULTI);
   MOX__global_cache_seg = buffer_Allocate_Buffer_Space(1525000 * MULTI);
   MOX__global_cache_size = 1525000 * MULTI;
   MOX__global_data_seg = allocate_Allocate_Dos_Space(10240 * MULTI);
   
   size=sizeof(MOX__nebula_t)*NEWMAX_NEBULAS;
-  MOX__nebula = (MOX__nebula_t*)allocate_Allocate_Dos_Space(size);//20);
-  struct_Clear_Structure_(MOX__nebula, size);
+  pMOX__nebula = (MOX__nebula_t*)allocate_Allocate_Dos_Space(size);//20);
+  struct_Clear_Structure_(pMOX__nebula, size);
   
   size=sizeof(MOX__star_t)*NEWMAX_STARS;
   MOX__star = (MOX__star_t*)allocate_Allocate_Dos_Space(size);//8136);
@@ -1706,6 +1732,12 @@ void no_memory_sub_52E9F0(size_t size)//0x0052E9F0 not hooked yet
   wsprintf(buf, "Couldn't Allocate %d Increase Virtual",size);
   exit_Exit_With_Message(buf);
 }
+typedef struct {
+	i32 allocated_; //1
+	i32 size_; //2
+	i32 mark_; //3
+} header_t;
+#define HEADERBLOCK_SIZE (12)
 i32* allocate_Allocate_Dos_Space(size_t size)//0x0052E8E0
 {  
   i32* ptr; // esi@3
@@ -1713,7 +1745,7 @@ i32* allocate_Allocate_Dos_Space(size_t size)//0x0052E8E0
     
   if ( size & 1 )
     size = (size & 0xFFFFFFFC) + 4;
-  ptr = (i32*)do_malloc_hooked(size + 12);
+  ptr = (i32*)do_malloc_hooked(size + HEADERBLOCK_SIZE);
   if ( !ptr )
     no_memory_sub_52E9F0(size);
   result = ptr + 3;
@@ -1726,10 +1758,13 @@ i32* allocate_Allocate_Space(size_t size)//0x0052E880
 {
   i32* ptr; // esi@3
   i32* result; // eax@5
-    
+  int size1=size;  
   if ( size & 1 )
-    size = (size & 0xFFFFFFFC) + 4;
-  ptr = allocate_Allocate_Dos_Space(size + 12);
+    size1 = (size & 0xFFFFFFFC) + 4;
+  size1+=HEADERBLOCK_SIZE;
+  ptr = (i32*)do_malloc_hooked(size1);
+  if ( !ptr )
+	ptr = allocate_Allocate_Dos_Space(size1);
   if ( !ptr )
     no_memory_sub_52E9F0(size);
   result = ptr + 3;
@@ -1749,6 +1784,150 @@ i32* allocate_Allocate_Space_No_Header(size_t size) //0x0052EA60
   }
   return ptr;
 }
+
+i32*__cdecl allocate_Allocate_Next_Block(i32* buf, size_t size) //0x0052E950
+{  
+	assert(sizeof(header_t)==HEADERBLOCK_SIZE);
+  //i32* ptr; // ebx@3
+  i32* result; // eax@5
+ 
+  int size1 = size; // ebp@1
+  if ( size & 1 )
+    size1 = (size & 0xFFFFFFFC) + 4;
+  header_t *mem1 = (header_t*)((i8*)buf - HEADERBLOCK_SIZE);
+  if ( mem1->allocated_ + size1 + HEADERBLOCK_SIZE > mem1->size_ )
+    malloc_error(size,mem1->allocated_ + size1 + HEADERBLOCK_SIZE, mem1->size_);
+  result = (i32*)((i8*)buf + mem1->allocated_ + HEADERBLOCK_SIZE);
+  mem1->allocated_ += size1 + HEADERBLOCK_SIZE;
+  header_t* mem = (header_t*)((i8*)result - HEADERBLOCK_SIZE);
+  mem->allocated_ = 0;
+  mem->size_ = size;
+  mem->mark_ = 0;
+  pLog.Printf_level(LOGMEM,"[block] at 0x%x with %d bytes (%d) allocate %d bytes 0x%x\n",buf,mem1->size_,mem1->allocated_,size,result);
+  return result;
+}
+void __cdecl malloc_error(size_t size,size_t need,size_t all_) //0052EA20
+{
+  char buf[MSL]; // [sp+0h] [bp-64h]@1
+  wsprintf(buf, "Unable to Allocate %d bytes (short by %d bytes) in a block size of %d!\ndiff=%d\n", size,need,all_,need-all_);
+  exit_Exit_With_Message(buf);
+}
+i32*__cdecl allocate_Allocate_First_Block(i32 *buf, size_t size) //0052E930
+{
+	header_t* mem = (header_t*)((i8*)buf - HEADERBLOCK_SIZE);
+	mem->allocated_ = 0;
+	return allocate_Allocate_Next_Block(buf, size);
+}
+i32* __cdecl allocate_Allocate_Next_Block_No_Header(i32* buf, size_t size) //0052EAC0
+{
+  //int *ptr; // edx@3
+  //int v4; // ecx@3
+  int *result; // eax@4
+
+  int size1 = size; // eax@1
+  if ( size & 1 )
+    size1 = (size & 0xFFFFFFFC) + 4;
+  header_t *mem = (header_t*)((i8*)buf - HEADERBLOCK_SIZE);
+  //int* ptr = (i32*)*(buf - 3);
+  //v4 = (int)ptr + size1;
+  int newsize = mem->allocated_ + size1;
+  if ( mem->size_ >= newsize )
+  {
+    result = (i32 *)((i8*)buf + mem->allocated_);
+    mem->allocated_ = newsize;
+    result[0] = 0;
+    result[1] = size;
+    result[2] = 0;
+	pLog.Printf_level(LOGMEM,"[block w/o header] at 0x%x with %d bytes %d allocate %d bytes 0x%x\n",buf,mem->size_,newsize,size,result);
+  }
+  else
+  {
+    result = 0;
+	pLog.Printf_level(LOGMEM,"error allocation 0x%x\n",buf);
+  }
+  return result;
+}
+i32* __cdecl allocate_Allocate_First_Block_No_Header(i32* buf, size_t size) //0052EAA0
+{
+	header_t *mem = (header_t*)((i8*)buf - HEADERBLOCK_SIZE);
+	mem->allocated_ = 0;
+  //*(buf - 3) = 0;
+  return allocate_Allocate_Next_Block_No_Header(buf, size);
+}
+
+i32* __cdecl allocate_Mark_Block(i32* buf) //0052EB10
+{
+	header_t *mem = (header_t*)((i8*)buf - HEADERBLOCK_SIZE);
+	mem->mark_ = mem->allocated_;
+	//*(a1 - 1) = *(a1 - 3);
+	pLog.Printf_level(LOGMEM,"mark block 0x%x with %d\n",buf,mem->allocated_);
+	return (i32*)mem;
+}
+i32* __cdecl allocate_Release_Block(i32* buf)//0052EB20
+{
+	header_t *mem = (header_t*)((i8*)buf - HEADERBLOCK_SIZE);
+	//*(a1 - 3) = *(a1 - 1);
+	pLog.Printf_level(LOGMEM,"release block 0x%x 0x%x with %d %d\n",buf,mem,mem->allocated_,mem->mark_);
+	mem->allocated_ = mem->mark_;	
+	return (i32*)mem;
+}
+int __cdecl allocate_Get_Remaining_Block_Space(i32* buf)//0052EBB0
+{
+	header_t *mem = (header_t*)((i8*)buf - HEADERBLOCK_SIZE);
+	int space = mem->size_ - mem->allocated_;
+	//return *(buf - 2) - *(buf - 3);
+	pLog.Printf_level(LOGMEM,"block 0x%x has %d free\n",buf, space);
+	return space;
+}
+typedef struct {
+	int* head;
+	int allocated;
+} blockstack_t;
+#define BLOCKSTACK_SIZE (40)
+blockstack_t blockstack[BLOCKSTACK_SIZE];
+i32* __cdecl Allocate_Push_Block(i32 *buf) //0052EB30
+{
+  //int *result; // eax@3
+  //int v2; // ecx@3
+
+  if ( block_counter_55B650 >= BLOCKSTACK_SIZE )
+    exit_Exit_With_Message("Mark Block Stack Size Exceeded");
+  header_t *mem = (header_t*)((i8*)buf - HEADERBLOCK_SIZE);
+  //v2 = 2 * block_counter_55B650;
+  //dword_57DF00 =
+  //dword_57DF00[v2] = buf;
+  //dword_57DF04[v2] = *(buf - 3);
+  blockstack[block_counter_55B650].head = buf;
+  blockstack[block_counter_55B650].allocated = mem->allocated_;
+  ++block_counter_55B650;
+  pLog.Printf_level(LOGMEM,"push block %d\n",block_counter_55B650);
+  return buf;
+}
+int __cdecl allocate_Pop_Block() //0052EB70
+{
+  int result; // eax@3
+
+  if ( block_counter_55B650 <= 0 )
+    exit_Exit_With_Message("Mark Block Stack Empty");
+  --block_counter_55B650;
+  //result = 8 * --dword_55B650;
+  //*(_DWORD *)(dword_57DF00[2 * dword_55B650] -8-4) = dword_57DF00[2 * dword_55B650]+4;
+  //*(_DWORD *)(dword_57DF00[2 * dword_55B650] - 12) = dword_57DF04[2 * dword_55B650];
+  result = 8 * block_counter_55B650;    
+  header_t* mem = (header_t*)((i8*)blockstack[block_counter_55B650].head - HEADERBLOCK_SIZE);
+  mem->allocated_ = blockstack[block_counter_55B650].allocated;
+  pLog.Printf_level(LOGMEM,"pop block %d\n",block_counter_55B650);
+  return result;
+}
+/**********************************************************************/
+
+
+
+
+
+
+
+
 ui32 __cdecl random_from_time_sub_52D4E0() //0x0052D4E0
 {   
   return random_Set_Random_Seed((ui32)time(0));
@@ -2011,13 +2190,27 @@ i16 __cdecl get_type_color_sub_4F1E30()
 //}
 void RUSS_PFMT_(int a1, int a2, const char *format, ...)//0x004D7850 //was empty, i guess it was for debug
 {
-  va_list args;
-  char buf[MSL];
+  assert(format);
+  char buf[MSL];  
+  va_list args;  
   va_start ( args, format ); 
   vsprintf(buf,format,args);
   va_end(args);
   pLog.Printf("RUSS_PFMT_ %d %d %s\n",a1,a2,buf);  
 }
+int sprintf_(char *buf, const char *format, ... )//00540550
+{
+	assert(format);
+	assert(buf);
+	va_list args;
+	va_start ( args, format );
+	int res=vsprintf(buf,format,args);
+	va_end(args);
+	//if(strstr(buf,"joined the game...")==0)
+	//	pLog.Printf("sprintf_ [0x%x] %s\n",buf,buf);
+	return res;
+}
+
 //MAPGEN_Universe_Generation_(v5, galaxy_size, a3);
 #define MOX__previous_screen (*(i8*)(0x00597AD0))
 #define byte_5A6378 (*(i8*)(0x005A6378))
@@ -2343,7 +2536,7 @@ char* __cdecl HAROLD_Get_Font_File_(char* fontfile) //0x004F24D0
   return strcpy(fontfile,str);
 }
 /*
-i32 MOX2_Screen_Control_(i16 a1, i16 a2, i16 a3) //00483830
+i32 MOX2_Screen_Control_()//i16 a1, i16 a2, i16 a3/) //00483830
 {
   int result; // eax@1
   int v4; // edx@12
@@ -2402,8 +2595,8 @@ i32 MOX2_Screen_Control_(i16 a1, i16 a2, i16 a3) //00483830
         {
           if ( sub_4867A0(a2) )
           {
-            LOWORD(v4) = MOX__settings.field_D7;
-            INITGAME_Init_New_Game_(MOX__settings.field_D4, MOX__settings.field_D6, v4, MOX__settings.field_D5);
+            //LOWORD(v4) = MOX__settings.galaxy_age;
+            INITGAME_Init_New_Game_(MOX__settings.game_difficulty, MOX__settings.galaxy_size, MOX__settings.galaxy_age, MOX__settings.num_players);
           }
           else
           {
@@ -2512,7 +2705,7 @@ i32 MOX2_Screen_Control_(i16 a1, i16 a2, i16 a3) //00483830
         continue;
     }
   }
-}   */
+} */  
 /*
 DoSomeInit();
 KEN_Ken_Init_();
@@ -2693,8 +2886,8 @@ i16 __cdecl set_map_maxxy_sub_4B6C40()//0x004B6C40
   int k=5*(2+size);
   MOX__cur_map_scale = k;
   MOX__max_map_scale = k;   
-  MOX__MAP_MAX_X = 253*k/5;
-  MOX__MAP_MAX_Y = 200*k/5;
+  MOX__MAP_MAX_X = nPrivate::get_xx()/2 /*253*/ *k/5;
+  MOX__MAP_MAX_Y = nPrivate::get_yy()/2 /*200*/ *k/5;
   switch ( size )
   {
     case 0:
@@ -2764,12 +2957,12 @@ i16 zoom_scale_sub_4F0880(i16 galaxy_size)
 //zoom_x_sub_4CD5D0(v3, v2);
 int __cdecl zoom_x_sub_4CD5D0(__int16 a1, __int16 a2)
 {
-  return 506 * a1 / a2;
+  return nPrivate::get_xx()/*506*/ * a1 / a2;
 }
 //zoom_y_sub_4CD5B0(v6, v5);
 int __cdecl zoom_y_sub_4CD5B0(__int16 a1, __int16 a2)
 {
-  return 400 * a1 / a2;
+  return nPrivate::get_yy()/*400*/ * a1 / a2;
 }
 
 i16 HAROLD_Map_Scale_To_Zoom_Level_()//0x004F1090
@@ -3354,7 +3547,7 @@ i8 __cdecl clear_video_sub_52D290()
   result = sub_527C60();
   if ( g_pPalette )
   {
-    result = g_pPalette->Release();
+    result = (i8)g_pPalette->Release();
     g_pPalette = 0;
   }
   return result;
@@ -3823,6 +4016,7 @@ void __cdecl MISC_Restore_Window_Status_(__int16 status)
 }
 __int16 __cdecl graphics_Set_Window(__int16 x1, __int16 y1, __int16 x2, __int16 y2) //00528BA0
 {
+	
 	if(x2==527 && y2==421)
 	{
 		x2=nPrivate::sx-113;
@@ -3833,6 +4027,7 @@ __int16 __cdecl graphics_Set_Window(__int16 x1, __int16 y1, __int16 x2, __int16 
 		x2=nPrivate::sx-1;
 		y2=nPrivate::sy-1;
 	}
+	//pLog.Printf("window %d,%d-%d,%d\n",x1,y1,x2,y2);
   if ( x1 < 0 )
     x1 = 0;  
   if ( y1 < 0 )
@@ -4701,8 +4896,8 @@ __int16 __cdecl animate_Draw(__int16 x1, __int16 y1, struct PicFrameHeader* head
         case nBITNOCOMPRESSION:
           if ( header->m_nbits & nBITFUNCCOLOR )
             sub_535C00(x1, y1, (i32)pframe);
-          //else
-            //sub_535D20(x1, y1, (i32)pframe);
+          else//??
+            sub_535D20(x1, y1, (i32)pframe);//??
           break;
         case 2:
           exit_Exit_With_Message("Screen Background can't be clipped");
@@ -4888,9 +5083,9 @@ __int16 __cdecl map_sub_4C7260(__int16 x1, __int16 y1, __int16 scale)//0x004C726
   word_596CB6 = (signed __int16)(v12 + ((char)-(v12 < 0) & sy)) % sy;
   return result;
 }
-i32 __cdecl HAROLD_Get_Up_Scaled_Value_(i16 a1)//004F0A50
+i32 __cdecl HAROLD_Get_Up_Scaled_Value_(i16 d)//004F0A50
 {
-  return MOX__cur_map_scale * a1 / 10;
+  return MOX__cur_map_scale * d / 10;
 }
 #define MOX__draw_main_screen_to_back (*(i8*)(0x00596E98))
 __int16 __cdecl MAINSCR_Center_Map_(__int16 x1, __int16 y1) //004C49D0
@@ -4898,8 +5093,8 @@ __int16 __cdecl MAINSCR_Center_Map_(__int16 x1, __int16 y1) //004C49D0
   __int16 v2; // si@1
   __int16 v3; // di@1
   __int16 result; // ax@9
-  i16 xx=nPrivate::sx-134; //506
-  i16 yy=nPrivate::sy-80; //400
+  i16 xx=nPrivate::get_xx();//nPrivate::sx-134; //506
+  i16 yy=nPrivate::get_yy();//nPrivate::sy-80; //400
   i16 cx=xx/2; //was 253
   i16 cy=yy/2; //was 200
   v2 = MOX__cur_map_x;
@@ -5166,7 +5361,7 @@ void MAINMENU_Draw_Main_Menu_Screen_(/*int a1, int a2*/) //__usercall int a1, in
   if ( MOX__FULL_DRAW_SCREEN_FLAG )
   {
     video_Set_Page_Off();
-    graphics_fill(0, 0, 639, 479, 0);
+    graphics_fill(0, 0, nPrivate::sx-1/*639*/, nPrivate::sy-1/*479*/, 0);
     animate_Draw(0, 0, MAINMENU__main_menu_background_seg);
     video_Copy_Off_To_Back();
     MOX2__TOGGLE_PAGES_();
@@ -5250,4 +5445,37 @@ void UpdateThread( void * param)
 	}
 	Sleep(10);
   }
+}
+
+/*
+KEN_Ken_Get_Text_Message_
+sub_425340
+HAROLD_Load_H_Strings
+*/
+
+i32 __cdecl HAROLD_Get_Scaled_Value_(i16 d) //004F0A30
+{
+  return 10 * d / MOX__cur_map_scale;
+}
+i32 __cdecl MAINSCR_Star_On_Screen_(i16 star_id)//004CD120
+{
+  i16 x; // [sp+0h] [bp-4h]@1
+  i16 y; // [sp+2h] [bp-2h]@1
+
+  MAINSCR_Get_Star_Draw_Coords_(star_id, &x, &y);
+  return x > nPrivate::offset_x && x < nPrivate::get_xx()+nPrivate::offset_x
+	  && y > nPrivate::offset_y && y < nPrivate::get_yy()+nPrivate::offset_y;
+  //return v2 > 21 && v2 < 527 && v3 > 21 && v3 < 421;
+}
+
+i16 __cdecl MAINSCR_Get_Star_Draw_Coords_(__int16 star_id, i16* x, i16* y) //004C7550
+{
+  //int v3; // esi@1
+  //__int16 result; // ax@1
+  
+  //v3 = /*113*/sizeof(MOX__star_t) * star_id;
+  *x = HAROLD_Get_Scaled_Value_(MOX__star[star_id].map_x - MOX__cur_map_x) + nPrivate::offset_x;
+  *y = HAROLD_Get_Scaled_Value_(MOX__star[star_id].map_y - MOX__cur_map_y) + nPrivate::offset_y;
+  //*(_WORD *)a3 = result;
+  return *y;
 }

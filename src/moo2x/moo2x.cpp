@@ -34,6 +34,7 @@ a funcs[]=
 	"OutputDebugStringA","kernel32.dll",&Intercept_OutputDebugStringA,
 	NULL,NULL,NULL
 };
+
 //////////////////////////////////////////////////////////////////////////
 struct Function 
 {
@@ -133,16 +134,33 @@ Function	Hooks[] =
 	0x004D7810, &RUSS_Assert_Settings_, //empty
 	//ship
 	0x00460600, &SHIPSTAK_Ship_Has_Special_,
-	//alloc
+	//alloc & memory
 	0x00500B20, &ALLOC_Allocate_Data_Space_,
 	0x0052E8E0, &allocate_Allocate_Dos_Space,
 	0x0052E880, &allocate_Allocate_Space,
 	0x0052EA60, &allocate_Allocate_Space_No_Header,
+	
+	0x0052E950, &allocate_Allocate_Next_Block,
+	0x0052E930, &allocate_Allocate_First_Block,
+	0x0052EAA0, &allocate_Allocate_First_Block_No_Header,
+	0x0052EAC0, &allocate_Allocate_Next_Block_No_Header,
+	0x0052EB10, &allocate_Mark_Block,
+	0x0052EB20, &allocate_Release_Block,
+	0x0052EBB0, &allocate_Get_Remaining_Block_Space,
+	0x0052EB70, &allocate_Pop_Block,
+	0x0052EB30, &Allocate_Push_Block,
+	
+
+	0x0052EA20, &malloc_error,
+
 	0x0052E9C0, &do_malloc_hooked,
 	0x005421A0, &malloc_hooked,
+	0x00542A70, &calloc_hooked,
+
     0x00542270, &free_hooked,
 	0x00546D80, &realloc_hooked,
 	0x00546F50, &msize_hooked,
+	0x0052E9F0, &no_memory_sub_52E9F0,
 	//replaced
 	0x004C1B20, &WorkerThread,
 	0x00483470,	&MOX2_Main,
@@ -164,7 +182,11 @@ Function	Hooks[] =
     0x00520210, &capture_Check_Release_Version,
 	//debug
 	0x004D7850, &RUSS_PFMT_,
-	//mapgen
+	0x00540550, &sprintf_,
+	//mapgen & coords
+	0x004C7550, &MAINSCR_Get_Star_Draw_Coords_,
+	0x004CD120, &MAINSCR_Star_On_Screen_,
+
 	0x004B6C40, &set_map_maxxy_sub_4B6C40,
 	0x004F1050, &get_galaxy_size_sub_4F1050,
 	0x004F1090, &HAROLD_Map_Scale_To_Zoom_Level_,
@@ -199,6 +221,10 @@ Function	Hooks[] =
 	0x004F1330, &HAROLD_N_Player_Ships_,
 	0x004F1DC0, &HAROLD_XY_To_Star_Id_,
 	//0x004C6550, &MAINSCR_Draw_Main_Screen_Filled_,
+	
+	//0x004F0A50, &HAROLD_Get_Up_Scaled_Value_,
+	0x004F0A30, &HAROLD_Get_Scaled_Value_,
+
 	//net dplay
 	0x00538680, &net_check_GUID_sub_538680,
 	0x005385C0, &guid_sub_5385C0,
@@ -230,10 +256,14 @@ Function	Hooks[] =
 	0x00539BE0, &net_decode_sub_539BE0,
 	0x00539BC0, &net_decode_sub_539BC0,
 	0x00534A90, &netcode_Net_Init,
+	0x004C2A40, &Initialize_NetCode,
 	//
 	0x00539C90, &sub_539C90,
 	0x00539C00, &sub_539C00,
 	0x00539A60, &net_decode_sub_539A60,
+
+	0x005081D0, &net_switch_sub_5081D0,
+
 	//callback
 	0x00534A70, &callback_sub_534A70,
 	//sound
@@ -412,7 +442,7 @@ int PatchInsideArrays(ReplaceInsideArrays* find1,int k)
 						DWORD shift = j-LOWORD(finds->m_Address);
 						DWORD rep=(DWORD)finds->m_replace+shift;
 						nPatcher::PatchData((LPVOID)finds->m_Address,(LPVOID)&rep,4);
-						//pLog.Printf("0x00%X\n",i+beg);
+						pLog.Printf_level(LOGMEM,"0x00%X\n",i+beg);
 						count++;
 					}
 				}
@@ -422,6 +452,31 @@ int PatchInsideArrays(ReplaceInsideArrays* find1,int k)
 		++finds;
 	}		
 	return 0;
+}
+void find_occurrences(ui32 dword,int data_size, DWORD* list,int size)
+{
+		pLog.Printf("searching... 0x%X\n",dword);
+		i32 beg = 0x00401000;
+		i32 end = 0x0054EF7D-beg;
+		int count=0;
+		ui8 find[4]={ LOBYTE(dword),HIBYTE(dword),LOBYTE(HIWORD(dword)),HIBYTE(HIWORD(dword)) };
+		ui8*arr=(ui8*)beg;
+		for(int i=0;i<end;i++)
+		{
+			if((data_size==2 && arr[i]==find[0] && arr[i+1]==find[1])
+			|| (data_size==4 && arr[i]==find[0] && arr[i+1]==find[1] && arr[i+2]==find[2]&& arr[i+3]==find[3])
+			)	
+			{
+				pLog.Printf_level(LOGMEM,"0x00%X\n",i+beg);
+				count++;
+				if(size<=count){
+					pLog.Printf("[!!!]%d\nexceeded %d size\n",count,size);
+					list[size]=NULL;
+				}
+			}			
+		}
+		pLog.Printf("%d\n",count);
+		list[count]=NULL;
 }
 ///////////////////////////
 // __stdcall
@@ -446,7 +501,8 @@ int WINAPI Intercept_MessageBoxA(HWND hwnd, char *text, char *hdr, ui32 utype)
   //Здесь вы можете порезвиться от души и выполнить любые, пришедшие вам 
   // в голову действия. Мы просто заменили сообщение функции на свое:
   //char *str = "Hi From MessageBOX!!!!";
- 
+	
+  pLog.Printf("%s %s\n",text,hdr);
   //Вызываем оригинальную функцию через указатель
   int ret = IDYES;
   char*hdrstr="Shrinker demonstration version";
@@ -561,6 +617,12 @@ WriteProcessMemory(GetCurrentProcess(), (void*)injects[i].adr,
 
 }
 int tests();
+namespace nPrivate{
+	int get_sx(void);
+	int get_sy(void);
+	int get_xx(void);
+	int get_yy(void);
+};
 int WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID lpvReserved)
 {	
 	if (dwReason == DLL_PROCESS_ATTACH /*|| dwReason == DLL_THREAD_ATTACH*/)
@@ -585,15 +647,44 @@ int WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID lpvReserved)
 		
 		tests();	
 		DWORD a=0x00534AC8;
-		BYTE d=0x02;
+		BYTE d=0x02;//tcp/ip
 		nPatcher::PatchData((LPVOID)a,&d,1);//tcp/ip
 		 
+		
 		//PatchInsideArrays(replaceinsidearrays,NEWMAX_SHIPS/MAX_SHIPS+1);
 
 		//PatchLimits(maxships,2,NEWMAX_SHIPS);
 		//PatchLimits(maxships_mult_500,4,NEWMAX_SHIPS*SHIP_RECORD_SIZE);
+		DWORD list[2048];
+		int size=2047;
+		find_occurrences(639,2,list,size); 
+		PatchLimits(list,2,nPrivate::get_sx()-1);
+		find_occurrences(479,2,list,size);
+		PatchLimits(list,2,nPrivate::get_sy()-1);
+		find_occurrences(640,2,list,size); 
+		PatchLimits(list,2,nPrivate::get_sx());
+		find_occurrences(480,2,list,size);
+		PatchLimits(list,2,nPrivate::get_sy());
+		
+		find_occurrences(527,2,list,size); 
+		PatchLimits(list,2,nPrivate::get_sx()-113);
+		find_occurrences(421,2,list,size);
+		PatchLimits(list,2,nPrivate::get_sy()-59);
 		
 
+		find_occurrences(506,2,list,size); 
+		PatchLimits(list,2,nPrivate::get_xx());
+		find_occurrences(400,2,list,size); 
+		PatchLimits(list,2,nPrivate::get_yy());
+
+		find_occurrences(576,2,list,size); 
+		PatchLimits(list,2,nPrivate::get_sy()-24);
+
+		find_occurrences(506000,4,list,size); 
+		PatchLimits(list,4,nPrivate::get_xx()*1000);
+		find_occurrences(400000,4,list,size); 
+		PatchLimits(list,4,nPrivate::get_yy()*1000);
+		
 		/*int count=0;
 		for(int i=0;i<end;i++)
 		{
@@ -671,5 +762,7 @@ int tests(void)
 	assert(sizeof(MOX__player_t)==PLAYER_RECORD_SIZE);
 	
 	assert(sizeof(savegame_t)==SAVEGAVE_RECORD_SIZE);
+	assert(sizeof(long)==4);
+	assert(sizeof(int)==4);
 	return 0;	
 }

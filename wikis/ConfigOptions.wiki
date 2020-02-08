@@ -1,0 +1,8 @@
+Introduction
+
+MOO2x has own configuration called "moo2x.cfg". It should be located in same folder where game is.
+Details
+
+Currently existing config options:
+
+| Name | Type | Description | |:-----|:-----|:------------| | render.fullscreen | bool | 0 = run in windowed mode | | debug.breakpoint | bool | 1 = show debug message box |

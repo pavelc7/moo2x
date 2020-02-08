@@ -1,0 +1,24 @@
+Introduction
+
+Original by Lord Brazen: http://www.spheriumnorth.com/orion-forum/nfphpbb/viewtopic.php?t=89
+Details
+
+| Size | Name | Description | |:-----|:-----|:------------| | 16 | Name | Null terminated string | | 1 | Ship class | See below | | 1 | Ship type | See below | | 1 | Drive type | See below | | 1 | FTL Speed | (What is FTL?) | | 1 | Computer type | See below | | 1 | Armor type | See below | | 5 | Specials | See below | | 8 | Weapon Slot 1 | See ship weapon | | 8 | Weapon Slot 2 | See ship weapon | | 8 | Weapon Slot 3 | See ship weapon | | 8 | Weapon Slot 4 | See ship weapon | | 8 | Weapon Slot 5 | See ship weapon | | 8 | Weapon Slot 6 | See ship weapon | | 8 | Weapon Slot 7 | See ship weapon | | 8 | Weapon Slot 8 | See ship weapon | | 1 | Ship shape | See below | | 1 | Builder | 0-7 = Player #, 8 = Antaran, 9 = Guardian, A-F = ? | | 2 | Cost to build | | | 1 | Combat speed | | | 2 | Stardate when built | | | 1 | Current ship owner | | | 1 | State of the ship | See below | | 2 | Destination star | | | 2 | Map X | | | 2 | Map Y | | | 1 | Navigator in fleet flag | | | 1 | Travelling speed for fleet | Slowest ship in fleet group | | 1 | ETA turns | | | 1 | Shield damage | | | 1 | Engine damage | | | 1 | Computer damage | | | 1 | Crew quality | | | 2 | Crew experience | | | 2 | Ship officer | | | 5 | Damage flags | See specials below | | 2 | Armor damage | | | 2 | Structural damage | | | 1 | AI mission | | | 1 | Just built flag | |
+
+Ship class | Name | Value | |:-----|:------| | 0 | Frigate | | 1 | Destroyer | | 2 | Cruiser | | 3 | Battleship | | 4 | Titan | | 5 | Doom Star |
+
+Ship type | Name | Value | |:-----|:------| | 0 | Combat Ship (includes monsters) | | 1 | Colony Ship | | 2 | Transport Ship | | 3 | Guardian | | 4 | Outpost Ship |
+
+Ship type | Name | Value | |:-----|:------| | 0 | none | | 1 | Class I | | 2 | Class III | | 3 | Class V | | 4 | Class VII | | 5 | Class X |
+
+Drive type | Name | Value | |:-----|:------| | 1 | Nuclear Drive | | 2 | Fusion Drive | | 3 | Ion Drive | | 4 | Anit-Matter Drive | | 5 | Hyper Drive | | 6 | Interphased Drive |
+
+Computer type | Name | Value | |:-----|:------| | 0 | No Computer | | 1 | Electronic Computer | | 2 | Optronic Computer | | 3 | Positronic Computer | | 4 | Cybertronic Computer | | 5 | Moleculartronic Computer |
+
+Armor type | Name | Value | |:-----|:------| | 1 | Titanium Armor | | 2 | Tritanium Armor | | 3 | Zortrium Armor | | 4 | Neutronium Armor | | 5 | Adamantium Armor | | 6 | Xentronium Armor |
+
+Specials | 1st byte | Name | Value | |:---------|:-----|:------| | | bit 0 = No Special (must be set if no others are set) | | | bit 1 = Achilles Targeting Unit | | | bit 2 = Augmented Engines | | | bit 3 = Automated Repair Unit | | | bit 4 = Battle Pods | | | bit 5 = Battle Scanner | | | bit 6 = Cloaking Device | | | bit 7 = Damper Field | | 2nd byte | | | | | bit 0 | Displacement Device | | | bit 1 | Ecm Jammer | | | bit 2 | Energy Absorber | | | bit 3 | Extended Fuel Tank | | | bit 4 | Fast Missile Racks | | | bit 5 | Hard Shields | | | bit 6 | Heavy Armor | | | bit 7 | High Energy Focus | | 3rd byte | | | | | bit 0 | Hyper-X Capacitors | | | bit 1 | Inertial Nullifier | | | bit 2 | Inertial Stabilizer | | | bit 3 | Lightning Field | | | bit 4 | Multi-Phased Shields | | | bit 5 | Multi-Wave Ecm Jammer | | | bit 6 | Phase Shifter | | | bit 7 | Phasing Cloak | | 4th byte | | | | | bit 0 | Quantum Detonator | | | bit 1 | Rangemaster Unit | | | bit 2 | Reflection Field | | | bit 3 | Reinforced Hull | | | bit 4 | Scout Lab | | | bit 5 | Security Stations | | | bit 6 | Shield Capacitor | | | bit 7 | Stealth Field | | 5th byte | | | | | bit 0 | Structural Analyzer | | | bit 1 | Sub Space Teleporter | | | bit 2 | Time Warp Facilitator | | | bit 3 | Transporters | | | bit 4 | Troop Pods | | | bit 5 | Warp Dissipator | | | bit 6 | Wide Area Jammer | | | bit 7 | unused |
+
+Ship shape | For players (builder < 8) | Name | Value | |:--------------------------|:-----|:------| | | 0-2b | normal ships | | | 2c | Avenger | | | 2d | colony ship | | | 2e | outpost | | | 2f | transport ship | | | 30-7f | normal ships | | For anything else (builder > 8) | | | | | 00-04 | Antarian Ships (Builder=8) | | | 07 | Guardian (Builder=9) | | | 08 | Large Ameoba | | | 09 | Large Crystal | | | 0A | Large Dragon | | | 0B | Large Eel | | | 0C | Large Hydra | | | 14 | Small Ameoba | | | 15 | Small Crystalp | | | 16 | Small Dragon | | | 17 | Small Eel | | | 18 | Small Hydra |
+
+State of the ship | 0 | Normal (In orbit) | |:--|:------------------| | 1 | In flight to another system | | 2 | Ordered to move to another system (still in orbit) | | 3 | Unknown | | 4 | Being refit (sitting in production queue) | | 5 | Deleted (destroyed, scrapped, production aborted) | | 6 | Being built (sitting in production queue) |

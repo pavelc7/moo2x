@@ -1,0 +1,6 @@
+Introduction
+
+I'm using freeware version of Interactive Diassembler Pro 4.3. You can get it here, for example: http://www.programmersheaven.com/download/37637/download.aspx
+Details
+
+After you have disassembler, you have to start disassembling orion95.exe from 1.31 patch. When it is doing something in background (disassembling), run orion95.idc file to import my IDA database.

@@ -1,0 +1,6 @@
+Introduction
+
+Some ideas how I will create remake of MOO2.
+Details
+
+    I came up with idea of MOO2 remake long ago. Actually, it was after I was too frustrated with MOO3. Almost at same time I found that DOS version of MOO2 has debug information in WATCOM format. However, there was no readers that can dump it into something readable by IDA, for example. Luckily, Watcom gone open source and I was able to dump debug information from MOO2 executable using homebrew tool which was quickly hacked up from Watcom sources. At that time I was able to tell how bad MOO2 was coded. Honestly speaking, MOO2 code is a mess. However, I must admit, it works. Also, when I thought about remake, I was sure that it will be very very hard to create it from scratch, by moving reversed pieces of code into new project and trying to make them work. Alternatively, I choosed another approach. I'm going from top to bottom: by using injected library, I can reroute original functions into reversed ones (implemented by me). Key benefits: 1. Everything works from beginning 1. Easy to test if function was reversed properly by comparing produced result When all functions will be reversed and moved into this injected library, I'll have complete remake of MOO2. That's it.

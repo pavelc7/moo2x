@@ -1,0 +1,7 @@
+Introduction
+
+In order to compile you'll need Microsoft Visual C++ Express Edition (or you can use full version of VStudio 2005 if you have it). You can get Visual C++ Express here: http://msdn.microsoft.com/vstudio/express/visualc/download/ Just follow instructions, install Platform SDK also. If you don't have DirectX SDK, you'll have to get one, for example from here: http://msdn2.microsoft.com/en-us/xna/aa937788.aspx
+
+Then, you can compile project and try to run it.
+
+How to run: * Copy loader.exe into your MOO2 game directory * Setup Post process step for moo2x library project as: copy $(TargetPath) <your MOO2 folder>\loader.dll * Now you can run loader.exe in MOO2 folder.

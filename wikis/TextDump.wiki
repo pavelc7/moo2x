@@ -1,0 +1,3 @@
+Introduction
+
+I was able to generate both .idc script for use in IDA and .txt file with additional information. You can find both in Subversion repository or by just clicking on Source tab above.

@@ -1,0 +1,8 @@
+Introduction
+
+Here you can find different structures that are used throughout the game. If you can add something, it is greatly appreciated.
+Details
+
+    Ship weapon
+    Ship
+    Star

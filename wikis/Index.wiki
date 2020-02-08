@@ -1,0 +1,10 @@
+Introduction
+
+Welcome to Master of Orion 2 (MOO2) Remake project. Our aim is to reverse Win32 version of MOO2 using debug information found in DOS version of MOO2 in order to create executable file which can be used instead of original one. Next step will be port of the game to open source operating systems. If you know C/C++ and x86 assembly language and you wish to help us, don't hesitate to contact me at joe.carpenter@gmail.com
+
+    Approach to remake process
+    Master of Orion 2 debug information dump
+    How to compile
+    How to help with reversing
+    Game Structures
+    Configuration options

@@ -1,0 +1,10 @@
+Introduction
+
+Original by Lord Brazen: http://www.spheriumnorth.com/orion-forum/nfphpbb/viewtopic.php?t=45 Structure size: 113 bytes.
+Details
+
+| Length | Name | Description | |:-------|:-----|:------------| | 15 | Star System Name | (Null terminated string) | | 2 | X-position | | | 2 | Y-position | | | 1 | Star size | 0 - 3 = Large - Tiny | | 1 | System Primary Owner | 0 - 7 = player #, FF=unowned | | 1 | Unknown | | | 1 | Star type | See below | | 17 | Unknown | | | 1 | System Special | See below | | 1 | Wormhole leads to | 0-7f = system #, FF = no wormhole | | 15 | Unknown | | | 1 | System has Warp Indictor | 0 = none, 1-8 = owner player 0-7 | | 5 | Unknown | | | 1 | System has Artimis Net | 0 = none, 1-8=owner player 0-7 | | 1 | Star has dimensional portal | | | 9 | Unknown | | | 2 | Link to planets table | 1st orbit (planet # 0-1ff, FFFF=none) - closest to sun | | 2 | Link to planets table | 2nd orbit (planet # 0-1ff, FFFF=none) | | 2 | Link to planets table | 3rd orbit (planet # 0-1ff, FFFF=none) | | 2 | Link to planets table | 4th orbit (planet # 0-1ff, FFFF=none) | | 2 | Link to planets | 5th orbit (planet # 0-1ff, FFFF=none) - furthest sun | | 16 | Relocation star id | 0-7 player #, not sure about size of array. | | 13 | Unknown | |
+
+Star type | Value | Name | |:------|:-----| | 0 | Blue | | 1 | White | | 2 | Yellow | | 3 | Orange | | 4 | Red | | 5 | Brown | | 6 | Black Hole |
+
+System special | 0 | none | |:--|:-----| | 2 | Space Debris | | 3 | Pirate Cache | | 4 | Gold Deposites | | 5 | Gem Deposits | | 6 | Natives | | 7 | Splinter Colony | | 8 | Hero | | A | Artifacts world | | B | Orion |

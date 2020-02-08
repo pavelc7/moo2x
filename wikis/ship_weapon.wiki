@@ -1,0 +1,10 @@
+Introduction
+
+Original by Lord Brazen: http://www.spheriumnorth.com/orion-forum/nfphpbb/viewtopic.php?t=89 Structure size: 8 bytes.
+Details
+
+| Size | Name | Description | |:-----|:-----|:------------| | 2 | Weapon type | | | 1 | Initial Quantity | | | 1 | Quantity Remaining | If weapon is damaged | | 1 | Firing arc | See below | | 2 | Weapon mods | See below | | 1 | Ammo remaining | Missiles only |
+
+Firing arc table | Value | Meaning | |:------|:--------| | 0x01 | F | | 0x02 | Fx | | 0x04 | Bx | | 0x08 | B | | 0x10 | 360 degrees |
+
+Weapon mods | Value | Meaning | |:------|:--------| | bit 0 | No mods (must be set if no mods) | | bit 1 | Heavy Mount | | bit 2 | Point Defense | | bit 3 | Armor Piercing | | bit 4 | Continuous | | bit 5 | No Range Dissipation | | bit 6 | Shield Piercing | | bit 7 | Auto Fire | | bit 8 | Env | | bit 9 | MIRV | | bit 10 | ECCM | | bit 11 | Heavy Armor | | bit 12 | Fast | | bit 13 | EMG | | bit 14 | Overloaded |

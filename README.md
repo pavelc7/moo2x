@@ -3,7 +3,7 @@ master of orion II
 
 from https://code.google.com/archive/p/moo2x2
 
-clone of https://code.google.com/archive/p/moo2x
+initial clone of https://code.google.com/archive/p/moo2x then i tried add more code;)
 read also
 https://code.google.com/archive/p/moo2x/wikis
 

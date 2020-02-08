@@ -7,6 +7,8 @@ initial clone of https://code.google.com/archive/p/moo2x then i tried add more c
 read also
 https://code.google.com/archive/p/moo2x/wikis
 
+see also http://openmoo2.org python moo2
+
 This project is aimed to create remake of famous game called Master of Orion 2 in order to fix bugs left in original version of the game and enchance gameplay.
 It's patching Win32 version
 
